@@ -1,0 +1,42 @@
+provider "azurerm" {
+  version = "=2.21.0"
+  features {}
+}
+
+resource "azurerm_resource_group" "example" {
+  name     = "example"
+  location = "westus2"
+}
+
+resource "azurerm_virtual_machine" "example" {
+  name                  = "example"
+  location              = azurerm_resource_group.example.location
+  resource_group_name   = azurerm_resource_group.example.name
+  network_interface_ids = [azurerm_network_interface.example.id]
+  vm_size               = "Standard_DS1_v2"
+
+  storage_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "16.04-LTS"
+    version   = "latest"
+  }
+
+  storage_os_disk {
+    name              = "example"
+    vhd_uri           = "${azurerm_storage_account.example.primary_blob_endpoint}${azurerm_storage_container.example.name}/example.vhd"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    disk_size_gb      = "30"
+  }
+
+  os_profile {
+    computer_name  = "example"
+    admin_username = "example"
+    admin_password = "example"
+  }
+
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+}
